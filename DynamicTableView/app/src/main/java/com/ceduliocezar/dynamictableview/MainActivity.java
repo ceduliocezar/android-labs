@@ -114,50 +114,62 @@ public class MainActivity extends AppCompatActivity {
 
             LinearLayout tableContainer = (LinearLayout) inflater.inflate(R.layout.table_layout, null);
 
-            LinearLayout headerLayout = (LinearLayout) inflater.inflate(R.layout.table_line, null);
+            createTableHeader(item, tableContainer);
+            createTableLines(item, tableContainer);
 
+            return tableContainer;
+        }
 
-            List<String> columns = item.columns;
-            for (int i = 0; i < columns.size(); i++) {
-                TextView label = (TextView) inflater.inflate(R.layout.cell_header, null);
-                label.setText(item.columns.get(i));
-
-                label.setLayoutParams(
-                        new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                                LinearLayout.LayoutParams.MATCH_PARENT, 1f));
-
-                headerLayout.addView(label);
-            }
-
-            tableContainer.addView(headerLayout);
-
-            LinearLayout lineTableLayout;
-
-
+        private void createTableLines(Item item, LinearLayout tableContainer) {
             List<List<String>> lines = item.lines;
 
             for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
+                createTableLine(tableContainer, lines.get(lineIndex));
+            }
+        }
 
-                lineTableLayout = (LinearLayout) inflater.inflate(R.layout.table_line, null);
+        private void createTableLine(LinearLayout tableContainer, List<String> line) {
+            LinearLayout lineTableLayout;
+            lineTableLayout = (LinearLayout) inflater.inflate(R.layout.table_line, null);
 
-                List<String> line = lines.get(lineIndex);
-
-                for (int columnIndex = 0; columnIndex < line.size(); columnIndex++) {
-                    TextView label = (TextView) inflater.inflate(R.layout.cell, null);
-                    label.setText(line.get(columnIndex));
-
-                    label.setLayoutParams(
-                            new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                                    LinearLayout.LayoutParams.MATCH_PARENT, 1f));
-
-                    lineTableLayout.addView(label);
-                }
-
-                tableContainer.addView(lineTableLayout);
+            for (int columnIndex = 0; columnIndex < line.size(); columnIndex++) {
+                createTableLineCell(line.get(columnIndex), lineTableLayout);
             }
 
+            tableContainer.addView(lineTableLayout);
+        }
 
-            return tableContainer;
+        private void createTableLineCell(String text, LinearLayout lineTableLayout) {
+            TextView label = (TextView) inflater.inflate(R.layout.cell, null);
+            label.setText(text);
+
+            label.setLayoutParams(
+                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT, 1f));
+
+            lineTableLayout.addView(label);
+        }
+
+        private void createTableHeader(Item item, LinearLayout tableContainer) {
+            LinearLayout headerLayout = (LinearLayout) inflater.inflate(R.layout.table_line, null);
+            List<String> columns = item.columns;
+
+            for (int columnIndex = 0; columnIndex < columns.size(); columnIndex++) {
+                createTableHeaderCell(columns.get(columnIndex), headerLayout);
+            }
+
+            tableContainer.addView(headerLayout);
+        }
+
+        private void createTableHeaderCell(String text, LinearLayout headerLayout) {
+            TextView label = (TextView) inflater.inflate(R.layout.cell_header, null);
+            label.setText(text);
+
+            label.setLayoutParams(
+                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT, 1f));
+
+            headerLayout.addView(label);
         }
 
         private boolean isImageCell(int position) {
