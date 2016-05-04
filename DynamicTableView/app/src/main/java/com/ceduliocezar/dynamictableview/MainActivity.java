@@ -18,25 +18,79 @@ public class MainActivity extends AppCompatActivity {
 
     private ListView listView;
 
-    private List<Item> items;
+    private List<Item> modelItems;
+    private List<PresentationItem> presentationItems;
 
-    private int numberOfColumns = 5;
-
+    private int numberOfColumns = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        createFakeItems();
+        createFakeModelItems();
+        convertPresentationItems();
 
-        listView = (ListView) findViewById(R.id.list);
-        listView.setAdapter(new TableAdpter(this, items));
+
+        listView = (ListView) findViewById(R.id.recycler);
+        listView.setAdapter(new PresentationAdapter(this, presentationItems));
 
     }
 
-    private void createFakeItems() {
-        items = new ArrayList<>();
+    private void convertPresentationItems() {
+        presentationItems = new ArrayList<>();
+
+        for (Item item : modelItems) {
+            if(item.hasImage()){
+                presentationItems.add(convertImageItem(item));
+            }else{
+                presentationItems.addAll(convertTableIntoItems(item));
+            }
+        }
+    }
+
+    private List<PresentationItem> convertTableIntoItems(Item item) {
+        List<PresentationItem> items =  new ArrayList<>();
+
+        presentationHeaderItem(item, items);
+        presentationLineItems(item, items);
+
+        return items;
+    }
+
+    private void presentationLineItems(Item item, List<PresentationItem> items) {
+        List<List<String>> lines = item.lines;
+
+        for (int i = 0; i < lines.size(); i++) {
+            presentationLineItem(item, items);
+        }
+    }
+
+    private void presentationLineItem(Item item, List<PresentationItem> items) {
+        PresentationItem presentationLineItem = new PresentationItem();
+        presentationLineItem.type = PresentationItem.Type.TABLE_LINE;
+        presentationLineItem.lineItems = item.columns;
+        items.add(presentationLineItem);
+    }
+
+    private void presentationHeaderItem(Item item, List<PresentationItem> items) {
+        PresentationItem headerItem = new PresentationItem();
+        headerItem.lineItems =  item.columns;
+        headerItem.type = PresentationItem.Type.TABLE_HEADER;
+        items.add(headerItem);
+    }
+
+    private PresentationItem convertImageItem(Item item) {
+
+        PresentationItem presentationItem =  new PresentationItem();
+        presentationItem.type = PresentationItem.Type.IMAGE;
+        presentationItem.imageURL = "/fake/img";
+
+        return presentationItem;
+    }
+
+    private void createFakeModelItems() {
+        modelItems = new ArrayList<>();
 
         for (int i = 0; i < 100; i++) {
             Item item = new Item();
@@ -47,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                 mockTable(item, i);
             }
 
-            items.add(item);
+            modelItems.add(item);
         }
     }
 
@@ -70,19 +124,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class TableAdpter extends BaseAdapter {
+    private class PresentationAdapter extends BaseAdapter {
 
         private LayoutInflater inflater;
-        private List<Item> items;
+        private List<PresentationItem> items;
 
-        public TableAdpter(Context context, List<Item> items) {
+        public PresentationAdapter(Context context, List<PresentationItem> items) {
             this.inflater = LayoutInflater.from(context);
             this.items = items;
         }
 
         @Override
         public int getCount() {
-            return 100;
+            return items.size();
         }
 
         @Override
@@ -101,79 +155,62 @@ public class MainActivity extends AppCompatActivity {
             if (isImageCell(position)) {
                 return createImageView(position);
             } else {
-                return createTableView(position);
+                return createTableLine(position);
             }
         }
 
         private View createImageView(int position) {
-            return inflater.inflate(R.layout.image_cell, null);
+            return inflater.inflate(R.layout.image_layout, null);
         }
 
-        private View createTableView(int position) {
-            Item item = items.get(position);
+        private View createTableLine(int position) {
+            PresentationItem item = items.get(position);
 
-            LinearLayout tableContainer = (LinearLayout) inflater.inflate(R.layout.table_layout, null);
+            LinearLayout tableLineContainer = (LinearLayout) inflater.inflate(R.layout.table_line, null);
 
-            createTableHeader(item, tableContainer);
-            createTableLines(item, tableContainer);
+            if(item.type == PresentationItem.Type.TABLE_HEADER){
+                createTableHeader(item, tableLineContainer);
+            }else{
+                createTableLine(item, tableLineContainer);
+            }
 
-            return tableContainer;
+            return tableLineContainer;
         }
 
-        private void createTableLines(Item item, LinearLayout tableContainer) {
-            List<List<String>> lines = item.lines;
+        private void createTableLine(PresentationItem item, LinearLayout tableLineContainer) {
+            List<String> lineItems = item.lineItems;
 
-            for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
-                createTableLine(tableContainer, lines.get(lineIndex));
+            for (int columnIndex = 0; columnIndex < lineItems.size(); columnIndex++) {
+                TextView label = (TextView) inflater.inflate(R.layout.cell, null);
+                label.setText(lineItems.get(columnIndex));
+
+                label.setLayoutParams(
+                        new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                LinearLayout.LayoutParams.MATCH_PARENT, 1f));
+
+                tableLineContainer.addView(label);
             }
         }
 
-        private void createTableLine(LinearLayout tableContainer, List<String> line) {
-            LinearLayout lineTableLayout;
-            lineTableLayout = (LinearLayout) inflater.inflate(R.layout.table_line, null);
+        private void createTableHeader(PresentationItem item, LinearLayout tableLineContainer) {
 
-            for (int columnIndex = 0; columnIndex < line.size(); columnIndex++) {
-                createTableLineCell(line.get(columnIndex), lineTableLayout);
-            }
-
-            tableContainer.addView(lineTableLayout);
-        }
-
-        private void createTableLineCell(String text, LinearLayout lineTableLayout) {
-            TextView label = (TextView) inflater.inflate(R.layout.cell, null);
-            label.setText(text);
-
-            label.setLayoutParams(
-                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                            LinearLayout.LayoutParams.MATCH_PARENT, 1f));
-
-            lineTableLayout.addView(label);
-        }
-
-        private void createTableHeader(Item item, LinearLayout tableContainer) {
-            LinearLayout headerLayout = (LinearLayout) inflater.inflate(R.layout.table_line, null);
-            List<String> columns = item.columns;
+            List<String> columns = item.lineItems;
 
             for (int columnIndex = 0; columnIndex < columns.size(); columnIndex++) {
-                createTableHeaderCell(columns.get(columnIndex), headerLayout);
+                TextView label = (TextView) inflater.inflate(R.layout.cell_header, null);
+                label.setText(columns.get(columnIndex));
+
+                label.setLayoutParams(
+                        new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                LinearLayout.LayoutParams.MATCH_PARENT, 1f));
+
+                tableLineContainer.addView(label);
             }
-
-            tableContainer.addView(headerLayout);
-        }
-
-        private void createTableHeaderCell(String text, LinearLayout headerLayout) {
-            TextView label = (TextView) inflater.inflate(R.layout.cell_header, null);
-            label.setText(text);
-
-            label.setLayoutParams(
-                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                            LinearLayout.LayoutParams.MATCH_PARENT, 1f));
-
-            headerLayout.addView(label);
         }
 
         private boolean isImageCell(int position) {
-            return items.get(position).hasImage();
+            return items.get(position).imageURL != null;
         }
     }
+
 }

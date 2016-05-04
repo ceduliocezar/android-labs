@@ -10,6 +10,7 @@ public class Item {
     String name;
     String imageUrl;
     List<String> columns;
+
     List<List<String>> lines;
 
     boolean hasImage(){
