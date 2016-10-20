@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private List<Item> modelItems;
     private List<PresentationItem> presentationItems;
 
-    private int numberOfColumns = 2;
+    private int numberOfColumns = 6;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
