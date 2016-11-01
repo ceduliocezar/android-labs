@@ -10,7 +10,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 /**
- * Created by TECBMCCS on 01/11/16.
+ * Created by cedulio on 01/11/16.
  */
 
 public class CurrencyMonthFormatter implements IValueFormatter {
