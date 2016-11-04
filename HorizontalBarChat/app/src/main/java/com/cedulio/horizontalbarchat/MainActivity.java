@@ -73,21 +73,36 @@ public class MainActivity extends AppCompatActivity {
         xAxis.setEnabled(true);
         xAxis.setLabelCount(entries.size());
         xAxis.setValueFormatter(new PeriodAxisFormatter());
+        xAxis.setTypeface(createSourceSansProBold());
+        xAxis.setTextSize(15);
+        xAxis.setTextColor(createMarineBlue());
 
         YAxis yAxis = mChart.getAxisLeft();
         yAxis.setDrawAxisLine(false);
         yAxis.setDrawGridLines(true);
         yAxis.setLabelCount(6, true);
         yAxis.setAxisMinimum(0f);
-        yAxis.setGridColor(ColorTemplate.rgb("#aeafaf"));
+        yAxis.setGridColor(createCoolGrey());
         yAxis.setValueFormatter(new EmptyAxisFormatter());
         yAxis.setAxisMaximum((float) (maxValue + maxValue * 0.40));
-        yAxis.setTypeface(Typeface.createFromAsset(getAssets(), "SourceSansPro-Bold.ttf"));
+        yAxis.setTypeface(createSourceSansProBold());
         yAxis.setTextSize(11f);
-        yAxis.setTextColor(ColorTemplate.rgb("#004060"));
+        yAxis.setTextColor(createMarineBlue());
 
         YAxis yAxisRight = mChart.getAxisRight();
         yAxisRight.setEnabled(false);
+    }
+
+    private int createCoolGrey() {
+        return ColorTemplate.rgb("#aeafaf");
+    }
+
+    private int createMarineBlue() {
+        return ColorTemplate.rgb("#004060");
+    }
+
+    private Typeface createSourceSansProBold() {
+        return Typeface.createFromAsset(getAssets(), "SourceSansPro-Bold.ttf");
     }
 
     private void customizeChart() {
@@ -95,9 +110,10 @@ public class MainActivity extends AppCompatActivity {
         mChart.setDrawValueAboveBar(true);
         mChart.getDescription().setEnabled(false);
         mChart.setPinchZoom(false);
+        mChart.setScaleEnabled(false);
         mChart.setHighlightFullBarEnabled(false);
         mChart.setHighlightPerDragEnabled(false);
-        mChart.setHighlightPerDragEnabled(false);
+        mChart.setHighlightPerTapEnabled(false);
         mChart.setFitBars(true);
         mChart.getLegend().setEnabled(false);
     }
@@ -110,14 +126,19 @@ public class MainActivity extends AppCompatActivity {
 
         set1 = new BarDataSet(entries, "DataSet 1");
         ArrayList<IBarDataSet> dataSets = new ArrayList<>();
+
         dataSets.add(set1);
-        set1.setColor(ColorTemplate.rgb("#004060"));
+
+        set1.setColor(createMarineBlue());
+
         BarData data = new BarData(dataSets);
+
         data.setValueTextSize(15f);
-        data.setValueTypeface(Typeface.createFromAsset(getAssets(), "SourceSansPro-Bold.ttf"));
-        data.setValueTextColor(ColorTemplate.rgb("#004060"));
-        data.setValueFormatter(new FixedCurrencyFormatter());
+        data.setValueTypeface(createSourceSansProBold());
+        data.setValueTextColor(createMarineBlue());
+        data.setValueFormatter(new KWhFormatter());
         data.setBarWidth(barWidth);
+
         mChart.setData(data);
 
     }
@@ -129,7 +150,8 @@ public class MainActivity extends AppCompatActivity {
 
         for (int i = 0; i < count; i++) {
             float val = (float) (Math.random() * range);
-            BarEntry entry = new BarEntry(i * spaceForBar, val);
+            float x = i * spaceForBar;
+            BarEntry entry = new BarEntry(x, val);
             entries.add(entry);
         }
     }
