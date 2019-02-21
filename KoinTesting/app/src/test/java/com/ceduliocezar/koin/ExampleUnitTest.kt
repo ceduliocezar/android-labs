@@ -1,4 +1,4 @@
-package com.example.ceduliocezar.kointesting
+package com.ceduliocezar.koin
 
 import org.junit.Test
 
